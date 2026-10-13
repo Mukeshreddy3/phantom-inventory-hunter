@@ -139,7 +139,8 @@ class Loop:
         try:
             q = ("SELECT id, discrepancy_id, category, sku, lot_code, value_at_risk, "
                  "priority, root_cause, confidence, proposed_fix, agent_mode, status, "
-                 "decided_at, decide_note, repeat_group FROM investigations")
+                 "investigated_at, decided_at, decide_note, repeat_group "
+                 "FROM investigations")
             args: list = []
             if status:
                 q += " WHERE status=?"

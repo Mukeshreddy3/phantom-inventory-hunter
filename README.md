@@ -21,6 +21,7 @@ make setup   # create venv + install deps
 make demo    # generate data, run reconciliation, print summary
 make agent   # investigate 10 sample discrepancies, print to console
 make loop    # 3-day simulated run: stream, reconcile, investigate, queue
+make dashboard  # web dashboard at http://127.0.0.1:8000
 make test    # run the unit test suite
 ```
 
@@ -48,7 +49,11 @@ One command to see it work: `make demo`.
    an expiry-risk boost, groups repeat root causes, and files everything in
    an approval queue (`--approve`/`--reject`; decisions never touch
    business tables).
-5. **Web dashboard + evaluation scores** (M4).
+5. **Web dashboard + evaluation scores** (M4) — `dashboard.py` (stdlib
+   HTTP server, no new dependencies) + `eval.py`: discrepancy list sorted by
+   value at risk, detail view with evidence trail and pallet-label image,
+   approve/reject buttons, summary panel ($X at risk, $Y reconciled, top
+   root causes), and root-cause accuracy vs ground truth, per category.
 
 ## Discrepancy types (all injected with ground truth)
 
@@ -78,7 +83,10 @@ phantom_hunter/
   tools.py        read-only evidence tools (ERP/WMS/log/labels)
   agent.py        investigation agent (ReAct-lite + rule-based fallback)
   runner.py       long-running loop: streaming, prioritization, approval queue
-tests/            pytest suite (42 tests)
+  dashboard.py    web dashboard (stdlib server + JSON API + static frontend)
+  eval.py         root-cause accuracy vs injected ground truth
+  static/         dashboard frontend (index.html, styles.css, app.js)
+tests/            pytest suite (51 tests)
 data/             generated DB + label images (gitignored, built by `make data`)
 DECISIONS.md      design decisions log
 ```
@@ -88,6 +96,7 @@ DECISIONS.md      design decisions log
 - **M1** ✅ Synthetic data generator + reconciliation engine, with unit tests
 - **M2** ✅ Investigation agent with tools (10 sample discrepancies, console output)
 - **M3** ✅ Long-running loop + approval queue
+- **M4** ✅ Dashboard + evaluation scores
 - **M3** Long-running loop + approval queue
 - **M4** Dashboard + evaluation scores
 - **M5** Polish: README, architecture diagram, scripted 3-minute demo

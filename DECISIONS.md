@@ -2,6 +2,26 @@
 
 Running log of design decisions. Newest first.
 
+## M4 (2026-10-13)
+
+25. **Dashboard on stdlib only** (`http.server` + plain HTML/JS, no
+    framework, no new pip deps). JSON API backs: summary, discrepancy
+    list/detail, approval queue, approve/reject POSTs, eval, label images.
+    `make dashboard` serves on :8000. Hash deep-links (#eval) for demo use.
+26. **Eval honesty rules.** Accuracy = investigated root causes vs injected
+    ground truth, per category + misses list. The stale-cutoff escalation
+    (M3 decision 20) is accepted as correct only when the PENDING message
+    was actually older than the 60-min window at investigation time —
+    checked from the message timestamp, not assumed. `label_contradiction`
+    is reported as vision-only/out-of-scope with the reason stated, not
+    silently dropped.
+27. **"Value reconciled"** = sum of value-at-risk over APPROVED
+    investigations (root cause found, fix approved by a human). Open risk
+    vs reconciled value are the two headline numbers.
+28. **Screenshots as evidence.** `docs/dash-main.png`, `docs/dash-eval.png`
+    captured headless during M4 for the milestone report and later the
+    hackathon submission.
+
 ## M3 (2026-10-13)
 
 19. **Streaming = resume + gen_day.** `Gen.resume()` restores seq counters,

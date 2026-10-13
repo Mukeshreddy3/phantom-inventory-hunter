@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phantom Inventory Hunter</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>👻 Phantom Inventory Hunter</h1>
+    <p class="sub">ERP ↔ WMS/ASRS mismatch investigation &mdash; <span id="sim-now"></span></p>
+  </div>
+</header>
+
+<section id="cards" class="cards"></section>
+
+<nav class="tabs">
+  <button data-tab="discs" class="active">Discrepancies</button>
+  <button data-tab="queue">Approval queue <span id="queue-count" class="pill"></span></button>
+  <button data-tab="eval">Evaluation</button>
+</nav>
+
+<main>
+  <section id="tab-discs" class="tab">
+    <table id="disc-table">
+      <thead><tr>
+        <th>ID</th><th>Category</th><th>SKU / Lot</th><th>ERP</th><th>WMS</th>
+        <th>Value at risk</th><th>Root cause</th><th>Status</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="tab-queue" class="tab hidden">
+    <table id="queue-table">
+      <thead><tr>
+        <th>ID</th><th>Priority</th><th>Root cause</th><th>SKU / Lot</th>
+        <th>Value</th><th>Proposed fix</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="tab-eval" class="tab hidden">
+    <div id="eval-summary" class="cards"></div>
+    <h2>Accuracy by root cause</h2>
+    <div id="eval-cats"></div>
+    <h2>Misses</h2>
+    <div id="eval-misses"></div>
+    <p class="note" id="eval-note"></p>
+  </section>
+</main>
+
+<div id="drawer" class="drawer hidden">
+  <button id="drawer-close">✕</button>
+  <div id="drawer-body"></div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
