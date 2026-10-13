@@ -19,8 +19,13 @@ a human approval queue.
 ```bash
 make setup   # create venv + install deps
 make demo    # generate data, run reconciliation, print summary
+make agent   # investigate 10 sample discrepancies, print to console
 make test    # run the unit test suite
 ```
+
+Set `META_MODEL_API_KEY` to use the Meta Model API for investigations;
+without it the agent runs a deterministic rule-based fallback (results are
+tagged `mode: fallback`).
 
 One command to see it work: `make demo`.
 
@@ -63,7 +68,10 @@ phantom_hunter/
   generator.py    synthetic data + discrepancy injection
   labels.py       pallet-label PNG generator (PIL)
   reconcile.py    deterministic reconciliation engine
-tests/            pytest suite (17 tests)
+  llm.py          Meta Model API client (cache + token logging + cost tracking)
+  tools.py        read-only evidence tools (ERP/WMS/log/labels)
+  agent.py        investigation agent (ReAct-lite + rule-based fallback)
+tests/            pytest suite (31 tests)
 data/             generated DB + label images (gitignored, built by `make data`)
 DECISIONS.md      design decisions log
 ```
@@ -71,7 +79,7 @@ DECISIONS.md      design decisions log
 ## Milestones
 
 - **M1** ✅ Synthetic data generator + reconciliation engine, with unit tests
-- **M2** Investigation agent with tools (10 sample discrepancies, console output)
+- **M2** ✅ Investigation agent with tools (10 sample discrepancies, console output)
 - **M3** Long-running loop + approval queue
 - **M4** Dashboard + evaluation scores
 - **M5** Polish: README, architecture diagram, scripted 3-minute demo

@@ -2,6 +2,38 @@
 
 Running log of design decisions. Newest first.
 
+## M2 (2026-10-13)
+
+12. **Meta Model API adapter (llm.py).** OpenAI-compatible `POST
+    {base}/chat/completions` with Bearer key, base URL
+    `https://api.meta.ai/v1`, model `muse-spark-1.3` — per public docs
+    (dev.meta.ai/docs) as of 2026-10-13. Re-verify endpoint + model list at
+    hackathon kickoff (Oct 26); everything is env-overridable
+    (`META_MODEL_API_BASE`, `META_MODEL_SMALL/LARGE`) with no code changes.
+13. **Rule-based fallback, honestly labeled.** No `META_MODEL_API_KEY` → the
+    agent investigates with a deterministic policy over the same evidence.
+    Every result carries `mode: api|fallback` and the console says which —
+    API and fallback runs are never confused.
+14. **ReAct-lite, not full ReAct.** Core evidence (discrepancy, lot,
+    integration log) is gathered deterministically (free, no tokens); the
+    model then drives up to 3 follow-up tool calls via a JSON-only protocol
+    before concluding. A fully model-driven loop is deferred — this keeps
+    token spend near zero while proving the reasoning + evidence trail.
+15. **Model routing.** `META_MODEL_SMALL` for routine steps, `META_MODEL_LARGE`
+    for hard cases (vision reads, value-at-risk > $20K). Both default to
+    `muse-spark-1.3` until the hackathon model list is confirmed — no invented
+    model names.
+16. **Budget instrumentation from day one.** Disk cache keyed by request hash
+    + `token_usage.jsonl` with per-call tokens and estimated USD
+    (muse-spark-1.3 Standard: $1.25/$4.25 per 1M in/out). Demo spend so far:
+    $0.0000 of the $150 budget.
+17. **Agent is read-only, provably.** Tools open SQLite with `mode=ro`;
+    `build_fix()` only *describes* fixes with `requires_approval=True`.
+    A test hashes the DB before/after investigations to prove zero writes.
+18. **Demo sample picker** round-robins ground-truth root causes by
+    value-at-risk so `make agent` always covers all 7 DB-detectable
+    categories. Result: 10/10 root-cause accuracy vs ground truth (fallback).
+
 ## M1 (2026-10-13)
 
 1. **Baseline-then-mutate injection.** The generator first builds a fully

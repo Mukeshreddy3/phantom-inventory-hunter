@@ -1,4 +1,4 @@
-.PHONY: setup data test demo clean
+.PHONY: setup data test demo agent clean
 
 PY := .venv/bin/python
 
@@ -14,6 +14,9 @@ test:
 
 demo: data
 	$(PY) -m phantom_hunter.reconcile --summary
+
+agent: data
+	$(PY) -m phantom_hunter.agent --samples 10
 
 clean:
 	rm -rf data .pytest_cache
