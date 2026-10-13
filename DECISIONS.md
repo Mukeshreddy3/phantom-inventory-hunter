@@ -2,6 +2,34 @@
 
 Running log of design decisions. Newest first.
 
+## M3 (2026-10-13)
+
+19. **Streaming = resume + gen_day.** `Gen.resume()` restores seq counters,
+    the SKU catalog, and the simulated clock from the DB, then re-seeds the
+    RNG (seed+7919) so the stream doesn't replay baseline draws. Each
+    streamed day ships old lots first (keeps new lots clean for injection),
+    then produces 6–12 new lots and injects 0–2 discrepancies.
+20. **Emergent escalation: stale PENDING → failed_message.** A cutoff_gap is
+    only a timing gap inside the 60-min sync window. Once the loop's clock
+    moves past it, the engine re-flags it as a real qty_mismatch (new
+    disc_key → reinvestigated) and the agent diagnoses the stuck message as
+    a failed delivery (confidence 0.80, fix: resend). The 5 baseline cutoff
+    gaps escalating on day 3 of the demo proved the behavior end-to-end.
+21. **Dedupe by natural key** (`category|sku|lot_code|pallet_id`), not by
+    engine D-ids (regenerated each run). A discrepancy is investigated once
+    ever; category changes (like the escalation above) legitimately
+    re-trigger investigation.
+22. **Priority = value_at_risk × expiry boost** (1.5× for expired lots,
+    1.25× for lots expiring within 7 days). The queue is always
+    highest-priority-first.
+23. **Repeat grouping via the investigations table itself** — no separate
+    memory table. A new investigation links `repeat_group` to the earliest
+    prior investigation with the same (root_cause, sku). Past root causes
+    are literally past rows.
+24. **Approve/reject only touch the investigations row.** Even an APPROVED
+    fix is never applied by the agent — applying it is the ERP/WMS's job.
+    A test hashes all business tables across decisions to prove it.
+
 ## M2 (2026-10-13)
 
 12. **Meta Model API adapter (llm.py).** OpenAI-compatible `POST

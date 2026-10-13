@@ -20,6 +20,7 @@ a human approval queue.
 make setup   # create venv + install deps
 make demo    # generate data, run reconciliation, print summary
 make agent   # investigate 10 sample discrepancies, print to console
+make loop    # 3-day simulated run: stream, reconcile, investigate, queue
 make test    # run the unit test suite
 ```
 
@@ -41,7 +42,12 @@ One command to see it work: `make demo`.
 3. **Investigation agent** (M2) — uses Meta Model API + tools (query ERP txns,
    query WMS txns, search integration log, read pallet-label images) to build an
    evidence trail per mismatch: root cause, confidence, evidence, proposed fix.
-4. **Long-running loop + approval queue** (M3).
+4. **Long-running loop + approval queue** (M3) — `runner.py`: each tick
+   streams a new simulated day, re-reconciles, investigates only new
+   discrepancies (deduped by natural key), prioritizes by value-at-risk with
+   an expiry-risk boost, groups repeat root causes, and files everything in
+   an approval queue (`--approve`/`--reject`; decisions never touch
+   business tables).
 5. **Web dashboard + evaluation scores** (M4).
 
 ## Discrepancy types (all injected with ground truth)
@@ -71,7 +77,8 @@ phantom_hunter/
   llm.py          Meta Model API client (cache + token logging + cost tracking)
   tools.py        read-only evidence tools (ERP/WMS/log/labels)
   agent.py        investigation agent (ReAct-lite + rule-based fallback)
-tests/            pytest suite (31 tests)
+  runner.py       long-running loop: streaming, prioritization, approval queue
+tests/            pytest suite (42 tests)
 data/             generated DB + label images (gitignored, built by `make data`)
 DECISIONS.md      design decisions log
 ```
@@ -80,6 +87,7 @@ DECISIONS.md      design decisions log
 
 - **M1** ✅ Synthetic data generator + reconciliation engine, with unit tests
 - **M2** ✅ Investigation agent with tools (10 sample discrepancies, console output)
+- **M3** ✅ Long-running loop + approval queue
 - **M3** Long-running loop + approval queue
 - **M4** Dashboard + evaluation scores
 - **M5** Polish: README, architecture diagram, scripted 3-minute demo

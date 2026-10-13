@@ -120,6 +120,34 @@ CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+
+-- M3: investigation results + human approval queue.
+-- disc_key is the dedupe natural key: category|sku|lot_code|pallet_id.
+-- The agent NEVER applies fixes; approve/reject only records the human's
+-- decision. repeat_group links repeat root causes (first occurrence's id).
+CREATE TABLE IF NOT EXISTS investigations (
+    id             TEXT PRIMARY KEY,
+    disc_key       TEXT UNIQUE NOT NULL,
+    discrepancy_id TEXT NOT NULL,
+    detected_at    TEXT NOT NULL,
+    investigated_at TEXT NOT NULL,
+    category       TEXT NOT NULL,
+    sku            TEXT,
+    lot_code       TEXT,
+    pallet_id      TEXT,
+    value_at_risk  REAL NOT NULL,
+    priority       REAL NOT NULL,
+    root_cause     TEXT NOT NULL,
+    confidence     REAL NOT NULL,
+    evidence       TEXT NOT NULL,
+    proposed_fix   TEXT NOT NULL,
+    agent_mode     TEXT NOT NULL,
+    status         TEXT NOT NULL DEFAULT 'PENDING_APPROVAL',
+    decided_at     TEXT,
+    decide_note    TEXT,
+    repeat_group   TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_inv_status ON investigations(status);
 """
 
 

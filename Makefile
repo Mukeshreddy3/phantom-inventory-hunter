@@ -1,4 +1,4 @@
-.PHONY: setup data test demo agent clean
+.PHONY: setup data test demo agent loop clean
 
 PY := .venv/bin/python
 
@@ -17,6 +17,9 @@ demo: data
 
 agent: data
 	$(PY) -m phantom_hunter.agent --samples 10
+
+loop: data
+	$(PY) -m phantom_hunter.runner --days 3
 
 clean:
 	rm -rf data .pytest_cache

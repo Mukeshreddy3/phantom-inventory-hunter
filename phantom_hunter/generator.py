@@ -85,11 +85,13 @@ class Gen:
     def __init__(self, seed: int = SEED):
         self.rng = random.Random(seed)
         self.seed = seed
+        self.now = NOW                      # simulated clock; advanced by stream_days()
         self._pallet_seq = 0
         self._msg_seq = 0
         self._gt_seq = 0
         self.skus: dict[str, dict] = {}
         self.clean_lots: list[dict] = []   # lots with no shipments/adjustments (injection pool)
+        self.label_dir: Path | None = None
 
     # -- id makers ---------------------------------------------------------- #
     def pallet_id(self) -> str:
@@ -283,7 +285,7 @@ class Gen:
         mid = self.msg_id()
         cur.execute(
             "INSERT INTO integration_log VALUES (?,?,?,?,?,?,?,?,?,?)",
-            (mid, NOW.isoformat(), "WMS->ERP", "PROD_RECEIPT", L["sku"], L["lot"],
+            (mid, self.now.isoformat(), "WMS->ERP", "PROD_RECEIPT", L["sku"], L["lot"],
              L["qty"], "FAILED", None, f"PR-{L['lot']}"))
         self.gt(cur, "failed_message", sku=L["sku"], lot=L["lot"],
                 detail={"msg_id": mid, "note": "WMS->ERP PROD_RECEIPT failed; ERP missing receipt"})
@@ -296,15 +298,15 @@ class Gen:
         mid = self.msg_id()
         cur.execute(
             "INSERT INTO integration_log VALUES (?,?,?,?,?,?,?,?,?,?)",
-            (mid, NOW.isoformat(), "WMS->ERP", "PROD_RECEIPT", L["sku"], L["lot"],
+            (mid, self.now.isoformat(), "WMS->ERP", "PROD_RECEIPT", L["sku"], L["lot"],
              L["qty"], "DUPLICATE", orig, f"PR-{L['lot']}"))
         cur.execute(
             """INSERT INTO erp_transactions
                (txn_date, doc_type, sku, lot_code, qty, uom, converted, qty_base, ref_doc, posted_at)
                VALUES (?,?,?,?,?,?,?,?,?,?)""",
-            (END_DATE.isoformat(), "PROD_RECEIPT", L["sku"], L["lot"], L["qty"],
+            (self.now.date().isoformat(), "PROD_RECEIPT", L["sku"], L["lot"], L["qty"],
              self.skus[L["sku"]]["base_uom"], 1, L["qty"],
-             f"PR-{L['lot']}", NOW.isoformat()))
+             f"PR-{L['lot']}", self.now.isoformat()))
         self.gt(cur, "duplicate_message", sku=L["sku"], lot=L["lot"],
                 detail={"msg_id": mid, "duplicate_of": orig,
                         "note": "receipt applied twice in ERP"})
@@ -341,7 +343,7 @@ class Gen:
         cur.execute(
             "INSERT INTO wms_moves (pallet_id, from_loc, to_loc, moved_at, synced) VALUES (?,?,?,?,1)",
             (pid, old_loc, new_loc,
-             (NOW - timedelta(hours=rng.randint(2, 30))).isoformat()))
+             (self.now - timedelta(hours=rng.randint(2, 30))).isoformat()))
         # NOTE: wms_pallets.location deliberately NOT updated -> stale record
         self.gt(cur, "wrong_bin", sku=L["sku"], lot=L["lot"], pallet=pid,
                 expected_engine="wrong_bin",
@@ -350,7 +352,7 @@ class Gen:
 
     # 6. lot is past expiry but still shows AVAILABLE with qty > 0
     def _inj_expired_available(self, cur, L, rng):
-        past = (NOW.date() - timedelta(days=rng.randint(3, 21))).isoformat()
+        past = (self.now.date() - timedelta(days=rng.randint(3, 21))).isoformat()
         cur.execute("UPDATE lots SET expiry_date=? WHERE lot_code=?", (past, L["lot"]))
         cur.execute(
             "UPDATE wms_pallets SET expiry_date=?, status='AVAILABLE' WHERE lot_code=?",
@@ -365,7 +367,7 @@ class Gen:
         ship_qty = round(L["qty"] * rng.uniform(0.05, 0.15), 2)
         self._consume_pallets(cur, L["sku"], L["lot"], ship_qty)
         mid = self.msg_id()
-        created = NOW - timedelta(minutes=rng.randint(5, 20))
+        created = self.now - timedelta(minutes=rng.randint(5, 20))
         cur.execute(
             "INSERT INTO integration_log VALUES (?,?,?,?,?,?,?,?,?,?)",
             (mid, created.isoformat(), "WMS->ERP", "SHIP_CONFIRM", L["sku"],
@@ -422,7 +424,7 @@ class Gen:
             SELECT sku, lot_code, ROUND(SUM(qty_base), 2)
             FROM erp_transactions GROUP BY sku, lot_code""")
         cur.execute("INSERT INTO meta VALUES (?,?)", ("seed", str(self.seed)))
-        cur.execute("INSERT INTO meta VALUES (?,?)", ("generated_at", NOW.isoformat()))
+        cur.execute("INSERT INTO meta VALUES (?,?)", ("generated_at", self.now.isoformat()))
         cur.execute("INSERT INTO meta VALUES (?,?)", ("injected", str(do_inject)))
         conn.commit()
 
@@ -447,6 +449,142 @@ class Gen:
         counts["labels"] = len(list(label_dir.glob("*.png")))
         conn.close()
         return counts
+
+    # -- streaming (M3: the world keeps moving) -------------------------------- #
+    @classmethod
+    def resume(cls, db_path: Path, label_dir: Path, seed: int | None = None) -> "Gen":
+        """Re-open an existing DB and continue its simulated clock."""
+        g = cls(seed=seed if seed is not None else SEED)
+        # re-seed so the stream doesn't replay the baseline's random draws
+        g.rng = random.Random((seed if seed is not None else SEED) + 7919)
+        g.label_dir = Path(label_dir)
+        conn = sqlite3.connect(db_path)
+        meta = dict(conn.execute("SELECT key, value FROM meta").fetchall())
+        g.now = datetime.fromisoformat(meta["generated_at"])
+
+        def max_seq(table, col, prefix):
+            r = conn.execute(
+                f"SELECT MAX(CAST(SUBSTR({col}, {len(prefix) + 1}) AS INTEGER)) FROM {table}"
+            ).fetchone()[0]
+            return r or 0
+
+        g._pallet_seq = max_seq("wms_pallets", "pallet_id", "PLT-")
+        g._msg_seq = max_seq("integration_log", "msg_id", "MSG-")
+        g._gt_seq = max_seq("ground_truth", "id", "GT-")
+        for r in conn.execute("SELECT sku, base_uom, alt_uom, alt_factor, unit_cost,"
+                              " shelf_life_days FROM sku_master"):
+            g.skus[r[0]] = {"sku": r[0], "base_uom": r[1], "alt_uom": r[2],
+                            "alt_factor": r[3], "unit_cost": r[4],
+                            "shelf_life_days": r[5]}
+        conn.close()
+        return g
+
+    def gen_day(self, cur, day: date, pool: list[dict]) -> None:
+        """Simulate one business day: shipments/adjustments on old lots, then
+        fresh production. New lots are appended to `pool` (all clean)."""
+        rng = self.rng
+        # 1. shipments against existing stock (old lots only -> new lots stay clean)
+        for _ in range(rng.randint(3, 8)):
+            row = cur.execute(
+                """SELECT sku, lot_code, SUM(qty_base) AS q FROM wms_pallets
+                   WHERE lot_code IN (SELECT lot_code FROM lots WHERE production_date < ?)
+                   GROUP BY sku, lot_code HAVING q > 50
+                   ORDER BY RANDOM() LIMIT 1""", (day.isoformat(),)).fetchone()
+            if not row:
+                break
+            sku, lot, q = row
+            ship_qty = round(q * rng.uniform(0.05, 0.20), 2)
+            soref = f"SO-{lot}-{day.strftime('%m%d')}-{rng.randint(10, 99)}"
+            sposted = datetime.combine(day, datetime.min.time()) + timedelta(hours=16)
+            s = self.skus[sku]
+            cur.execute(
+                """INSERT INTO erp_transactions
+                   (txn_date, doc_type, sku, lot_code, qty, uom, converted, qty_base, ref_doc, posted_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                (day.isoformat(), "SALES_SHIP", sku, lot, -ship_qty,
+                 s["base_uom"], 1, -ship_qty, soref, sposted.isoformat()))
+            smid = self.msg_id()
+            cur.execute(
+                "INSERT INTO integration_log VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (smid, sposted.isoformat(), "WMS->ERP", "SHIP_CONFIRM",
+                 sku, lot, -ship_qty, "DELIVERED", None, soref))
+            self._consume_pallets(cur, sku, lot, ship_qty)
+
+        # 2. fresh production
+        for _ in range(rng.randint(6, 12)):
+            sku = rng.choice(list(self.skus))
+            s = self.skus[sku]
+            expiry = day + timedelta(days=s["shelf_life_days"])
+            qty = round(rng.uniform(500, 8000), 2)
+            for attempt in range(20):  # unique lot code
+                lot = f"L{day.strftime('%Y%m%d')}-{sku[-4:]}{rng.randint(0, 99):02d}"
+                if not cur.execute("SELECT 1 FROM lots WHERE lot_code=?",
+                                   (lot,)).fetchone():
+                    break
+            else:
+                continue
+            cur.execute("INSERT INTO lots VALUES (?,?,?,?,?)",
+                        (lot, sku, day.isoformat(), expiry.isoformat(), qty))
+            ref = f"PR-{lot}"
+            posted = datetime.combine(day, datetime.min.time()) + timedelta(hours=7)
+            cur.execute(
+                """INSERT INTO erp_transactions
+                   (txn_date, doc_type, sku, lot_code, qty, uom, converted, qty_base, ref_doc, posted_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                (day.isoformat(), "PROD_RECEIPT", sku, lot, qty, s["base_uom"],
+                 1, qty, ref, posted.isoformat()))
+            mid = self.msg_id()
+            cur.execute(
+                "INSERT INTO integration_log VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (mid, posted.isoformat(), "WMS->ERP", "PROD_RECEIPT",
+                 sku, lot, qty, "DELIVERED", None, ref))
+            remaining = qty
+            while remaining > 0.01:
+                pq = round(min(remaining, rng.uniform(200, 1000)), 2)
+                remaining -= pq
+                cur.execute(
+                    "INSERT INTO wms_pallets VALUES (?,?,?,?,?,?,?,?,?)",
+                    (self.pallet_id(), sku, lot, pq, s["base_uom"], _bin(rng),
+                     expiry.isoformat(), "AVAILABLE", posted.isoformat()))
+            pool.append({"sku": sku, "lot": lot, "qty": qty,
+                         "unit_cost": s["unit_cost"]})
+
+    def stream_days(self, db_path: Path, label_dir: Path, days: int,
+                    inject_per_day: int = 1,
+                    categories: list[str] | None = None) -> dict:
+        """Advance the simulated world `days` days. Returns a summary."""
+        db_path = Path(db_path)
+        self.label_dir = Path(label_dir)
+        self.label_dir.mkdir(parents=True, exist_ok=True)
+        cats = categories or ["failed_message", "duplicate_message",
+                              "unposted_receipt", "wrong_uom", "wrong_bin",
+                              "expired_available", "cutoff_gap"]
+        conn = sqlite3.connect(db_path)
+        cur = conn.cursor()
+        start = self.now.date()
+        new_lots, injected = 0, 0
+        for i in range(1, days + 1):
+            day = start + timedelta(days=i)
+            self.now = datetime.combine(day, datetime.min.time()) + timedelta(hours=23, minutes=59)
+            pool: list[dict] = []
+            self.gen_day(cur, day, pool)
+            new_lots += len(pool)
+            for _ in range(min(inject_per_day, len(pool))):
+                L = pool.pop(self.rng.randrange(len(pool)))
+                cat = cats[self.rng.randrange(len(cats))]
+                getattr(self, f"_inj_{cat}")(cur, L, self.rng)
+                injected += 1
+        cur.execute("DELETE FROM erp_inventory")
+        cur.execute("""
+            INSERT INTO erp_inventory (sku, lot_code, qty_base)
+            SELECT sku, lot_code, ROUND(SUM(qty_base), 2)
+            FROM erp_transactions GROUP BY sku, lot_code""")
+        cur.execute("INSERT OR REPLACE INTO meta VALUES (?,?)",
+                    ("generated_at", self.now.isoformat()))
+        conn.commit()
+        conn.close()
+        return {"days_streamed": days, "new_lots": new_lots,
+                "injected": injected, "now": self.now.isoformat()}
 
 
 def main():

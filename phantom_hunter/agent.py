@@ -49,6 +49,7 @@ unknown.
 - wrong_bin: the ASRS move log shows a pallet in a different bin than its WMS master record.
 - expired_available: the lot is past expiry but still shows available quantity.
 - cutoff_gap: the mismatch is fully explained by a PENDING message inside the sync window.
+  (A PENDING message OLDER than the sync window is a stuck/failed delivery -> failed_message.)
 - label_contradiction: the physical pallet label (image) contradicts the WMS record.
 
 Rules:
@@ -78,10 +79,11 @@ def build_fix(root_cause: str, disc: dict, ev: dict) -> dict:
     sku, lot = disc["sku"], disc["lot_code"]
     msgs = ev.get("integration_log", [])
     if root_cause == "failed_message":
-        m = next((x for x in msgs if x["status"] == "FAILED"), msgs[0] if msgs else {})
+        m = next((x for x in msgs if x["status"] == "FAILED"),
+                 next((x for x in msgs if x["status"] == "PENDING"), {}))
         return _fix("resend_message", {"msg_id": m.get("msg_id")},
                     f"Resend {m.get('msg_id')} ({m.get('direction')} {m.get('msg_type')}, "
-                    f"ref {m.get('ref_doc')}) so the ERP posts the missing receipt.")
+                    f"ref {m.get('ref_doc')}) so the ERP posts the missing update.")
     if root_cause == "duplicate_message":
         m = next((x for x in msgs if x["status"] == "DUPLICATE"), {})
         return _fix("reverse_duplicate_posting",
@@ -188,6 +190,16 @@ def fallback_investigate(disc: dict, ev: dict) -> dict:
         ev_line(f"ERP shows {len(receipts)} receipt postings for one production lot — "
                 f"double-counted {disc['erp_qty'] - disc['wms_qty']:,.2f} {disc.get('uom')}.")
         return ("duplicate_message", 0.90, evidence)
+
+    stale = [m for m in msgs if m["status"] == "PENDING"]
+    if stale:
+        m = stale[0]
+        ev_line(f"STALE PENDING message {m['msg_id']}: {m['direction']} {m['msg_type']} "
+                f"ref {m['ref_doc']} created {m['created_at']} — never delivered "
+                f"inside the sync window. Treating as a failed delivery.")
+        ev_line(f"ERP {disc['erp_qty']:,.2f} vs WMS {disc['wms_qty']:,.2f} "
+                f"{disc.get('uom')}; the stuck message explains the full difference.")
+        return ("failed_message", 0.80, evidence)
 
     unconverted = [t for t in txns if not t["converted"]]
     if unconverted:
