@@ -24,6 +24,9 @@ loop: data
 dashboard:
 	$(PY) -m phantom_hunter.dashboard --port 8000
 
+showcase:
+	$(PY) -m phantom_hunter.showcase
+
 clean:
 	rm -rf data .pytest_cache
 	find . -name __pycache__ -type d -prune -exec rm -rf {} +

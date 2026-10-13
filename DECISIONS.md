@@ -2,6 +2,21 @@
 
 Running log of design decisions. Newest first.
 
+## M5 (2026-10-13)
+
+29. **Architecture diagram is generated, not drawn** (`docs/architecture.py`,
+    PIL, zero deps) — re-runnable, versioned, matches the dashboard palette.
+30. **Showcase is a real injection, not a mock.** `showcase.py` builds a
+    fresh world, injects the $48K expired rack-14 lot through the same code
+    path as every other discrepancy (ERP receipt posted, 6 pallets, label
+    image, ground-truth row), then runs the real engine → agent → queue →
+    approval → eval pipeline on it. If the pipeline breaks, the demo
+    breaks — no theater.
+31. **README is the submission front page.** Problem, 3-minute demo,
+    quickstart, architecture, layout, milestones, license — everything a
+    judge needs in one scroll. Screenshots committed under docs/.
+32. **MIT license**, copyright Mukesh Reddy Chinreddy.
+
 ## M4 (2026-10-13)
 
 25. **Dashboard on stdlib only** (`http.server` + plain HTML/JS, no
