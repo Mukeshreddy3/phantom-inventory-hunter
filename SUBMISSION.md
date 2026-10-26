@@ -135,7 +135,7 @@ accuracy, $0.00 spend.
 | Nov 3 | Last full day for submission questions / troubleshooting |
 | **Nov 4, 9:00 PM ET** | **Submissions due via CV platform** |
 | Nov 5 – 8 | Judging — no action needed, EXCEPT the two audience bonuses: keep pushing the X demo post (Viral counts to Nov 8, 11:59 PM ET) and the gallery vote |
-| Nov 9, 12:00 PM ET | Closing ceremony, top 5 per track, winners revealed |
+| Nov 9, 12:00 PM ET | Closing ceremony, top 5 per track, winners revealed — Stage 3 is a LIVE final round (judges watch the demos live and rank them), so keep the api-mode demo runnable, not just the video |
 | Nov 16 | Community vote winner announced on Discord |
 
 ## ⚠️ The "built during the hackathon" question — RESOLVED BY THE GUIDE
