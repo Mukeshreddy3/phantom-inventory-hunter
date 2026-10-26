@@ -79,9 +79,14 @@ Oct 26 blasts covered kickoff (12 PM ET / 9 AM PT) and the credit claim.
   `meta-models/muse-spark-open-1026`, NOT `muse-spark-open`, per the
   guide), Modal $100, Fireworks $25 (shortlist). Baseten is the
   realistic route to the open-weight bonus.
-- **Schedule (all ET):** kickoff Mon Oct 26, 12 PM; Agents 101 Tue Oct 27,
-  12–1 PM; Agents 102 Wed Oct 28, 12–1 PM; Fireworks Fri Oct 30,
-  12–1 PM; office hours weekdays 10–11 AM in Discord #office-hours.
+- **Schedule (all ET; PT = ET − 3h):** kickoff Mon Oct 26, 12 PM ET
+  (9 AM PT); Meta Engineering Workshop P1 ("Agents 101: Build a
+  Multimodal AI Agent") Tue Oct 27, 12–1 PM ET (9–10 AM PT, Suraj
+  Subramanian); P2 ("Agents 102: Best Practices for Verifiable
+  Agents") Wed Oct 28, 12–1 PM ET (9–10 AM PT, Yash Khare);
+  Fireworks AI Workshop Fri Oct 30, 12–1 PM ET (9–10 AM PT, Sinan
+  Ozdemir); office hours weekdays 10–11 AM ET (7–8 AM PT) in
+  Discord #office-hours.
   Building period Oct 27 – Nov 4. Judging Nov 5–8; closing ceremony
   Mon Nov 9, 12 PM (top 5 per track announced, live final-round
   judging); community vote winner Mon Nov 16.
