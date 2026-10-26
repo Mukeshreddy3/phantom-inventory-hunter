@@ -90,11 +90,17 @@ Oct 26 blasts covered kickoff (12 PM ET / 9 AM PT) and the credit claim.
   Building period Oct 27 – Nov 4. Judging Nov 5–8; closing ceremony
   Mon Nov 9, 12 PM (top 5 per track announced, live final-round
   judging); community vote winner Mon Nov 16.
-- **Credits claim route (corrected):** the Guide's claim is a Google
-  form ("Meta Global AI Hackathon: Model API Credit Claims"), not
-  just the event page — use the form linked in the Guide, then check
-  the Billing page. Conditions unchanged: individual claim only, card
-  required, spend-limit notification available, claim by Nov 4, 9 PM ET.
+- **Credits claim route (corrected):** request forms open in Discord
+  **#resources** at kickoff — the Meta form is titled "Meta Global AI
+  Hackathon: Model API Credit Claims". Then check the Billing page.
+  Conditions unchanged: individual claim only, card required,
+  spend-limit notification available, claim by Nov 4, 9 PM ET.
+- **Credit pool + claim priority (caps matter):** Meta $150 (every
+  participant — guaranteed, claim first, unblocks the punch list);
+  Baseten $100 + 2M TPM (capped at 2,000 participants — claim early,
+  also the open-weight bonus route); Modal $100 for Meta open-weights
+  models (capped at 1,000 — claim early); Fireworks $25 (select
+  participants only — don't count on it). Total if all claimed: $375.
 - **Anti-project list (checked Oct 26):** Phantom clears all ten
   banned categories. Two look adjacent and are addressed in the
   writeup/video framing: (1) "Dashboards as the main feature" — the
