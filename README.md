@@ -94,12 +94,13 @@ phantom_hunter/
   llm.py         Meta Model API client (cache + token/cost logging)
   tools.py       read-only evidence tools
   agent.py       investigation agent
+  vision.py      pallet-label vision (label_contradiction catch)
   runner.py      long-running loop + approval queue
   dashboard.py   web dashboard (stdlib HTTP server + JSON API)
   eval.py        accuracy vs injected ground truth
   showcase.py    scripted 3-minute demo
   static/        dashboard frontend
-tests/           53 pytest tests
+tests/           70 pytest tests
 docs/            architecture diagram, dashboard screenshots, DECISIONS.md
 ```
 
@@ -113,6 +114,22 @@ including the real bugs the test suite caught.
 - **M3** ✅ Long-running loop + approval queue
 - **M4** ✅ Dashboard + evaluation scores
 - **M5** ✅ Polish: README, architecture diagram, scripted 3-minute demo
+
+## Hackathon submission (built Oct 26 – Nov 4, 2026 — the new work)
+
+- **Live Meta Model API investigation** — muse-spark-1.3 in api mode.
+  Verified: 2/2 sample investigations in pure `api` mode, including a
+  robustness fix for the live model's prose and prose-prefixed JSON.
+- **Multimodal pallet-label vision** — label images read through the
+  API, making `label_contradiction` a real catch. Verified: 2/2
+  injected contradictions with exact field values, plus a clean match.
+- **Api-mode evaluation + dashboard** — 10/10 correct, accuracy 1.0,
+  $0.1511 spend. Screenshots: `docs/dash-api-summary.png`,
+  `docs/dash-api-eval.png`, `docs/dash-api-queue.png`.
+
+Everything before M5 is foundation from before the event and is not
+claimed as hackathon work. Full writeup:
+[`docs/submission-writeup.md`](docs/submission-writeup.md).
 
 ## License
 

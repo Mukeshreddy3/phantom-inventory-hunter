@@ -32,10 +32,12 @@ before the event."
 ## 0:15–1:00 — Feature 1: live Meta Model API investigation
 "First: the agent now investigates with a real Meta model. Watch the mode
 flag — api, not fallback — and the token log."
-[Run `make agent` in api mode on the rack-14 case. Pause on: root cause
-expired_available, the evidence trail, `mode: api`, and
-`data/token_usage.jsonl` showing real tokens against the $150 budget.
-Say: "The case is synthetic; the investigation running here is new."]
+[Run the agent in api mode via the connector runner on two live samples.
+Pause on: root causes failed_message and duplicate_message, the
+evidence trails, `mode: api`, and the token log showing real tokens
+against the $150 budget. Say: "The cases are synthetic; the
+investigation running here is new." Do NOT use the rack-14 showcase
+case here — that case is pre-existing foundation, not a new feature.]
 
 ## 1:00–1:50 — Feature 2: multimodal label vision (the new catch)
 "Second, and this is the one I'm proudest of: the agent can now READ
