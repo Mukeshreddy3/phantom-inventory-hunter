@@ -123,7 +123,7 @@ accuracy, $0.00 spend.
 | Oct 27 – Nov 4 | Building period; workshops + weekday office hours 10–11 AM ET |
 | Nov 3 | Last full day for submission questions / troubleshooting |
 | **Nov 4, 9:00 PM ET** | **Submissions due via CV platform** |
-| Nov 5 – 8 | Judging (Stage One pass/fail, then rubric scoring) |
+| Nov 5 – 8 | Judging — no action needed, EXCEPT the two audience bonuses: keep pushing the X demo post (Viral counts to Nov 8, 11:59 PM ET) and the gallery vote |
 | Nov 9, 12:00 PM ET | Closing ceremony, top 5 per track, winners revealed |
 | Nov 16 | Community vote winner announced on Discord |
 
