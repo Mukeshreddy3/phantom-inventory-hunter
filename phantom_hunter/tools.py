@@ -83,6 +83,17 @@ def query_wms_pallets(db_path: Path, sku: str, lot_code: str) -> list[dict]:
         conn.close()
 
 
+def get_pallet(db_path: Path, pallet_id: str) -> dict | None:
+    """One WMS pallet row by id (the system side of a label comparison)."""
+    conn = _connect(db_path)
+    try:
+        r = conn.execute("SELECT * FROM wms_pallets WHERE pallet_id=?",
+                         (pallet_id,)).fetchone()
+        return dict(r) if r else None
+    finally:
+        conn.close()
+
+
 def query_wms_moves(db_path: Path, pallet_id: str) -> list[dict]:
     """ASRS move history for one pallet (source of truth for bin location)."""
     conn = _connect(db_path)

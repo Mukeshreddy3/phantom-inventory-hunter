@@ -23,8 +23,8 @@ import json
 import sqlite3
 from pathlib import Path
 
-from . import tools
-from .llm import LLMClient
+from . import tools, vision
+from .llm import LLMClient, extract_json_object
 
 ROOT_CAUSES = ["failed_message", "duplicate_message", "unposted_receipt",
                "wrong_uom", "wrong_bin", "expired_available", "cutoff_gap",
@@ -55,6 +55,8 @@ unknown.
 Rules:
 - NEVER apply fixes. Only propose them; every fix requires human approval.
 - Set confidence 0.0-1.0 honestly from evidence strength.
+- If the evidence already answers the case, conclude now instead of calling another tool.
+- Pallet-label images are checked by a separate vision step, not through these tools.
 - Respond with JSON ONLY, no prose. Either:
   {"tool_call": {"name": "<tool>", "args": {...}}, "reason": "<why>"}
   or
@@ -291,6 +293,17 @@ class InvestigationAgent:
         return self._result(disc, root_cause, confidence, trail, ev,
                             mode="fallback", tokens=tokens)
 
+    # -- label vision ------------------------------------------------------- #
+    def investigate_label(self, pallet_id: str) -> dict:
+        """Diagnose one pallet's label photo (vision step, not the text loop).
+
+        The text tool loop cannot carry images, so label checks run here
+        via vision.py. A contradiction proposes a quarantine for approval,
+        like every other fix; nothing is ever applied.
+        """
+        return vision.investigate_pallet_label(
+            self.db_path, self.label_dir, self.llm, pallet_id)
+
     def _investigate_llm(self, disc, ev, trail, tokens) -> dict:
         sku, lot = disc["sku"], disc["lot_code"]
         hard = disc["category"] == "qty_mismatch" and disc["value_at_risk"] > 20000
@@ -300,12 +313,19 @@ class InvestigationAgent:
                 "discrepancy": disc, "lot": ev["lot"],
                 "integration_log": ev["integration_log"]}, default=str)},
         ]
-        for _ in range(MAX_TOOL_ROUNDS):
+        for round_no in range(MAX_TOOL_ROUNDS):
+            if round_no == MAX_TOOL_ROUNDS - 1:
+                messages.append({"role": "user",
+                                 "content": "Final round: return a conclusion now, "
+                                            "no more tool calls."})
             resp = self.llm.chat(messages, hard=hard, purpose="investigate")
             self._accumulate(tokens, resp)
-            try:
-                step = json.loads(resp["text"])
-            except json.JSONDecodeError:
+            # The live model answers with prose, or prose ahead of the JSON
+            # (verified 2026-10-26). Extract the object instead of
+            # discarding the whole reply; None covers prose-only replies
+            # and null content from reasoning-heavy short budgets.
+            step = extract_json_object(resp.get("text"))
+            if step is None:
                 messages.append({"role": "user",
                                  "content": "Respond with JSON only, no prose."})
                 continue

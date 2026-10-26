@@ -108,3 +108,54 @@ def test_llm_client_chat_refuses_in_fallback(tmp_path):
     assert llm.mode == "fallback"
     with pytest.raises(RuntimeError):
         llm.chat([{"role": "user", "content": "hi"}])
+
+
+class FakeApiLLM:
+    """Queued canned replies in api mode (robustness-pass tests)."""
+
+    def __init__(self, texts):
+        self._texts = list(texts)
+        self.mode = "api"
+
+    def chat(self, messages, **kwargs):
+        text = self._texts.pop(0)
+        return {"text": text, "model": "fake",
+                "usage": {"prompt_tokens": 10, "completion_tokens": 20},
+                "cached": False, "mode": "api"}
+
+    def log_fallback_call(self, purpose="investigate"):
+        pass
+
+
+def _conclusion_json(root_cause="failed_message"):
+    return json.dumps({"conclusion": {
+        "root_cause": root_cause, "confidence": 0.85,
+        "reasoning": "Evidence points here.",
+        "proposed_fix_action": "resend_message", "fix_params": {},
+        "fix_description": "Resend it."}})
+
+
+def test_api_loop_recovers_prose_and_concludes(db, tmp_path):
+    """2026-10-26 live-model shape: prose, then prose+tool_call, then conclude."""
+    d = _disc_for_category(db, "failed_message")
+    tool_call = json.dumps({"tool_call": {
+        "name": "query_erp_transactions",
+        "args": {"sku": d["sku"], "lot_code": d["lot_code"]}},
+        "reason": "check ERP postings"})
+    fake = FakeApiLLM(["Just looking into this.",
+                       "Checking ERP postings. " + tool_call,
+                       _conclusion_json()])
+    agent = InvestigationAgent(db, tmp_path / "labels", llm=fake)
+    inv = agent.investigate(d["id"])
+    assert inv["mode"] == "api"
+    assert inv["root_cause"] == "failed_message"
+
+
+def test_api_loop_recovers_null_content(db, tmp_path):
+    """Null content (reasoning ate a small budget) must nudge, not crash."""
+    d = _disc_for_category(db, "failed_message")
+    fake = FakeApiLLM([None, _conclusion_json()])
+    agent = InvestigationAgent(db, tmp_path / "labels", llm=fake)
+    inv = agent.investigate(d["id"])
+    assert inv["mode"] == "api"
+    assert inv["root_cause"] == "failed_message"

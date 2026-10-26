@@ -38,6 +38,35 @@ from pathlib import Path
 
 DEFAULT_BASE = "https://api.meta.ai/v1"
 DEFAULT_SMALL = "muse-spark-1.3"
+
+
+def extract_json_object(text: str | None) -> dict | None:
+    """Parse a model reply as a JSON object, tolerating prose around it.
+
+    The live model often answers with prose before or around the JSON
+    (verified 2026-10-26: a bare prose reply, then a prose prefix ahead of
+    a valid tool_call). A strict ``json.loads`` discards the whole reply
+    in both cases. This tries the full text first, then the substring
+    from the first ``{`` to the last ``}``. Returns None when neither
+    parses (including a None/empty reply, which happens when reasoning
+    tokens consume a small max_tokens budget).
+    """
+    if not text:
+        return None
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        parsed = None
+    if isinstance(parsed, dict):
+        return parsed
+    start, end = text.find("{"), text.rfind("}")
+    if start < 0 or end <= start:
+        return None
+    try:
+        parsed = json.loads(text[start:end + 1])
+    except json.JSONDecodeError:
+        return None
+    return parsed if isinstance(parsed, dict) else None
 DEFAULT_LARGE = "muse-spark-1.3"  # finalized at kickoff; see DECISIONS.md
 
 
