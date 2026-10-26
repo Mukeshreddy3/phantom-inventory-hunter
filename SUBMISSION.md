@@ -95,6 +95,11 @@ Oct 26 blasts covered kickoff (12 PM ET / 9 AM PT) and the credit claim.
   Hackathon: Model API Credit Claims". Then check the Billing page.
   Conditions unchanged: individual claim only, card required,
   spend-limit notification available, claim by Nov 4, 9 PM ET.
+- **Kickoff close-out (Oct 26):** hacking officially started; the
+  kickoff recording lands in #resources today (watch it later — the
+  live slot was 9 AM PT). Channel routing: #questions for event
+  questions, #office-hours for Meta team technical questions,
+  #team-search if a team is ever wanted (solo is fine).
 - **Credit pool + claim priority (caps matter):** Meta $150 (every
   participant — guaranteed, claim first, unblocks the punch list);
   Baseten $100 + 2M TPM (capped at 2,000 participants — claim early,
