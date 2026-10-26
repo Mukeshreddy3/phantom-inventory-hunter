@@ -128,6 +128,21 @@ Muse model published; do NOT switch to the discounted
 use). `make agent` in api mode is UNPROVEN until the key exists:
 Oct 26 smoke test without a key printed `mode: fallback`, 2/2
 accuracy, $0.00 spend.
+**Full price list (model catalog, Oct 26):** Spark 1.3 Standard
+$1.25 in / $0.15 cached in / $4.25 out per 1M; Spark 1.3 Contributor
+$0.10 / $0.002 / $0.20 (up to 95% cheaper, but training-use +
+rate-limited + select countries — not the plan); Spark 1.2/1.1 same
+as 1.3 Standard; Wonder $4.00 / $0.20 / $20.00 (not needed);
+Wonder Full is subscription-only; Spark Open + Glimmer are
+open-weight downloads (no API price); SAM 3.1 $2.50/1,000 images;
+Muse Image $0.01/image; Voice Transcribe $0.18/hr.
+**Cost estimate (from the code, not a guess):** max 3 tool rounds
+per investigation, output capped at 1,500 tokens/call → typical
+investigation ≈ 5,000 in / 500 out ≈ $0.01; heavy ≈ $0.015.
+Whole punch list (10 samples + ~36-case eval + vision demo + loop
++ one robustness re-run) ≈ **$2–5**, i.e. ~2% of the $150 grant.
+Hitting $150 would take ~10,000 investigations. Identical repeat
+runs cost $0 (response cache).
 
 ## Timeline
 
