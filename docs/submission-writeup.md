@@ -4,14 +4,34 @@
 **Phantom Inventory Hunter** — a long-running AI agent that finds and explains
 ERP↔WMS inventory mismatches, before they cost you $48K.
 
+## Theme
+**Build for Your World** — bring Meta's models into a domain you know
+firsthand. I'm an IT Business Analyst who integrates Dynamics 365 with a
+Mecalux-style ASRS warehouse. This is the mismatch hunt I do by hand.
+
+## What was built during the hackathon (Oct 26 – Nov 4) — the submission
+1. **Live Meta Model API investigation** — the agent investigates with
+   muse-spark-1.3 in api mode: real tool-loop reasoning, real token
+   spend logged against the $150 budget (see `data/token_usage.jsonl`).
+2. **Multimodal pallet-label vision** — the agent reads label images
+   through the API, making `label_contradiction` a real catch for the
+   first time; previously it was engine-invisible by design.
+3. **Api-mode evaluation + dashboard refresh** — accuracy scored against
+   injected ground truth in api mode, dashboard refreshed on api-mode
+   investigations.
+
+## Foundation from before the event (NOT claimed as hackathon work)
+Synthetic ERP/WMS world generator, deterministic reconcile engine,
+dashboard shell, approval queue, rule-based fallback investigation path.
+The demo video highlights only the three items above.
+
 ## The problem
 In food & dairy manufacturing, the ERP (e.g., Microsoft Dynamics 365) and the
 warehouse management system driving the automated storage/retrieval system
 each keep their own inventory records. They drift apart — failed integration
 messages, duplicate postings, wrong units of measure, mislabeled pallets,
 timing gaps — and analysts trace every mismatch by hand, hours per case.
-I'm an IT Business Analyst who integrates Dynamics 365 with a Mecalux-style
-ASRS warehouse. I live this problem.
+I live this problem.
 
 ## What it does
 Phantom reconciles both systems deterministically, then an AI agent
@@ -29,8 +49,10 @@ anyone touching it.
   routine investigations, larger for hard cases (vision, high dollar risk).
 - The agent drives a tool loop (ERP/WMS/log/label reads) and synthesizes
   conclusions as structured JSON: root cause, confidence, evidence, fix.
-- Responses cached; every token logged against a **$150 budget** (reference
-  demo spend: $0.00 on the rule-based fallback path).
+- Responses cached; every token logged against a **$150 budget**.
+- Bonus fit: **Best Agentic Use-Case** — the agent works autonomously
+  across multi-step workflows, makes decisions under uncertainty, and
+  never applies a fix without human approval.
 - Stack: Python, SQLite, plain HTML/JS dashboard. One command to run:
   `make showcase`.
 

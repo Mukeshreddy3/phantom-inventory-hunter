@@ -1,39 +1,64 @@
 # Demo video script — 3 minutes max (judges stop watching at 3:00)
 
+## ⛔ The governing rule (Participant Guide §4)
+
+The video must **only highlight features, code, and functionality built
+during the Hackathon** (Oct 26 – Nov 4). Failure to clearly identify your
+original contributions = immediate disqualification at judges' discretion.
+So this script demos ONLY the three event-window features below. The
+pre-existing foundation (synthetic world, reconcile engine, dashboard
+shell) appears only as the frame, and the video states that plainly.
+
 Record terminal + dashboard in one continuous take if possible. No music,
-no trademarked assets. Script is timed to `make showcase` + dashboard.
+no trademarked assets.
 
-## 0:00–0:20 — The hook (dashboard, discrepancy table)
-"Forty-eight thousand dollars of product. The ERP says it's available.
-It expired yesterday, sitting in rack 14. Nobody noticed — until Phantom did."
-[Show the dashboard: $486K at risk, the expired_available row at top.]
+## On-screen list (show at 0:00 and again at 2:30)
 
-## 0:20–0:50 — The world + the catch (terminal: `make showcase`, Acts 1–2)
-"Phantom Inventory Hunter watches the gap between an ERP and the automated
-warehouse. It builds a synthetic world — 200 SKUs, 30 days — then reconciles
-every lot deterministically."
-[Run it; pause on the reconcile output: ERP 4,379.56 AVAILABLE vs WMS
-4,379.56 in rack 14, $47,999.98 at risk.]
+> **Built during this hackathon:**
+> 1. Live Meta Model API investigation (muse-spark-1.3, api mode)
+> 2. Multimodal pallet-label vision — label_contradiction as a real catch
+> 3. Api-mode evaluation + token/spend tracking
+>
+> Foundation from before the event: synthetic ERP/WMS world, deterministic
+> reconcile engine, dashboard shell.
 
-## 0:50–1:40 — The investigation (terminal: Act 3)
-"The engine flags; the agent investigates. It queries ERP postings, WMS
-pallets, the integration log — then concludes: expired lot, 95% confidence,
-with the evidence trail and a proposed write-off."
-[Scroll the evidence lines slowly.]
+## 0:00–0:15 — Hook + transparency line
+"Phantom Inventory Hunter finds ERP↔warehouse inventory mismatches. What
+you're about to see is what I built during this hackathon: live Meta AI
+investigation and label vision, on top of a synthetic world I built
+before the event."
+[Show the on-screen list.]
 
-## 1:40–2:10 — The human stays in charge (dashboard: detail drawer)
-"The agent never applies fixes. Everything waits in an approval queue.
-Here's the evidence, the pallet label, the proposed fix — one click to
-approve." [Click into the row, show the drawer, click Approve.]
+## 0:15–1:00 — Feature 1: live Meta Model API investigation
+"First: the agent now investigates with a real Meta model. Watch the mode
+flag — api, not fallback — and the token log."
+[Run `make agent` in api mode on the rack-14 case. Pause on: root cause
+expired_available, the evidence trail, `mode: api`, and
+`data/token_usage.jsonl` showing real tokens against the $150 budget.
+Say: "The case is synthetic; the investigation running here is new."]
 
-## 2:10–2:40 — It's long-running (terminal: `make loop`, 3 ticks)
-"It doesn't stop. Every day it streams new activity, re-reconciles,
-prioritizes by dollars times expiry risk, and groups repeat failures.
-Watch a stale timing-gap message escalate into a failed delivery on its own."
+## 1:00–1:50 — Feature 2: multimodal label vision (the new catch)
+"Second, and this is the one I'm proudest of: the agent can now READ
+pallet labels. Before this week, a label that contradicted the system
+was invisible to the pipeline. Now the model reads the image and flags
+it."
+[Show a contradictory label pair: system says lot X, label says lot Y.
+Run the label investigation; pause on the model's read of the image and
+the label_contradiction verdict with its evidence.]
 
-## 2:40–3:00 — Close (evaluation tab)
-"Every diagnosis is scored against injected ground truth: 100% root-cause
-accuracy. Built with Muse Spark on the Meta Model API — smallest model for
-routine cases, larger for the hard ones — with every token logged against
-a $150 budget. One command to run it all: make showcase."
-[End on the Evaluation tab: 100.0%, per-category bars.]
+## 1:50–2:30 — Feature 3: api-mode evaluation + dashboard
+"Third: everything is scored in api mode — accuracy against injected
+ground truth, plus token spend. Here's the dashboard on api-mode
+investigations."
+[Show the Evaluation tab: accuracy + per-category bars. Show the detail
+drawer: evidence trail + label image + proposed fix + Approve. Click
+Approve once, on camera.]
+
+## 2:30–3:00 — Close: theme + recap
+"This is Build for Your World: I integrate Dynamics 365 with an automated
+warehouse for a living, and this is the mismatch hunt I do by hand —
+now done by an agent that explains itself and never applies a fix
+without a human. Built during this hackathon: live Meta Model API
+investigation, multimodal label vision, and api-mode evaluation. One
+command to run it: make agent."
+[End on the on-screen list.]
