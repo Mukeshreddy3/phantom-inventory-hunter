@@ -68,10 +68,13 @@ Oct 26 blasts covered kickoff (12 PM ET / 9 AM PT) and the credit claim.
   4th $50K, 5th $25K. Bonus pool $50K: Most Viral $20K (post the demo
   on X, engagement counted until Nov 8 EOD — free to attempt),
   Best Build on Meta Open Weight Models $10K (must run on own hardware
-  or partner inference — stretch, see Baseten), Community Vote $10K,
+  or partner inference — stretch, see Baseten), Community Vote $10K
+  (most votes in the public gallery, one per verified account),
   **Best Agentic Use-Case $5K** (autonomy, decisions, multi-step
   workflows — Phantom's natural bonus; name it in the writeup),
-  Best Creative Build $5K (Muse Image / Muse Wonder).
+  Best Creative Build $5K (Muse Image / Muse Wonder — weakest fit,
+  skip). Most Viral engagement counts likes + reposts + comments
+  until Nov 8, 11:59 PM ET.
 - **Partner credits (optional stretch):** Baseten $100 (use
   `meta-models/muse-spark-open-1026`, NOT `muse-spark-open`, per the
   guide), Modal $100, Fireworks $25 (shortlist). Baseten is the
