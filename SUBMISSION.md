@@ -188,7 +188,9 @@ So the strategy is:
 
 ## Submission checklist
 
-- [ ] Public GitHub repo (create it; push; MIT license already in repo).
+- [ ] Public GitHub repo (create it; push; MIT license already in repo)
+      — and verify it opens in a **logged-out browser** before submitting
+      (a repo that looks public while logged in can still be private).
 - [ ] README carries the "built during the hackathon" list + foundation
       disclaimer; screenshots are api-mode.
 - [ ] Demo video ≤ 3 minutes, public (YouTube/Vimeo) — highlights
@@ -196,7 +198,9 @@ So the strategy is:
       `docs/demo-video-script.md`.
 - [ ] Text description names the theme (Build for Your World) and the
       hackathon-built list — see `docs/submission-writeup.md`.
-- [ ] Submit via the Cerebral Valley portal by **Nov 3** (buffer day);
+- [ ] Submit via the Cerebral Valley portal
+      (cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit)
+      by **Nov 3** (buffer day — "don't wait for the last hour");
       double-check repo public, video link works, all contributors
       listed (solo: just Mukesh).
 - [ ] (Free bonus) Post the demo on X after the event; submit the post
