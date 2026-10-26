@@ -87,6 +87,17 @@ Oct 26 blasts covered kickoff (12 PM ET / 9 AM PT) and the credit claim.
   just the event page — use the form linked in the Guide, then check
   the Billing page. Conditions unchanged: individual claim only, card
   required, spend-limit notification available, claim by Nov 4, 9 PM ET.
+- **Anti-project list (checked Oct 26):** Phantom clears all ten
+  banned categories. Two look adjacent and are addressed in the
+  writeup/video framing: (1) "Dashboards as the main feature" — the
+  dashboard is a review surface for the agent's work (approval queue),
+  not the product; the product is the autonomous investigation, and
+  the demo leads with the agent, not the dashboard. (2) "Simple image
+  analyzers" — label vision is one evidence tool inside a multi-step
+  investigation (ERP + WMS + log + label), not the app itself. The
+  other eight (medical advice, basic RAG, Streamlit apps, education
+  chatbots, job screeners, nutrition coaches, personality/sports
+  analyzers) are unrelated on their face.
 
 **API verification (2026-10-26, no key yet):** base
 `https://api.meta.ai/v1`, POST `/chat/completions`, model
